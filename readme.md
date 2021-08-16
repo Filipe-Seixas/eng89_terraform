@@ -23,6 +23,7 @@
 
 - Add env variables to Windows (AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY) and make sure to close and open your terminal
 - Create main.tf file `nano main.tf`
+- Specify the ssh key you want to use in your main.tf file
 
 #### main.tf
 ```bash
@@ -59,10 +60,146 @@ resource "aws_instance" "app_instance" {
 # Once we are happy and the outcome is green we could run terraform apply
 ```
 
-
 - `terraform init` to initialise terraform
 - `terraform plan` to check and preview the changes that will happen to the infrastructure
 - `terraform apply` to commit the changes
 - `terraform destroy` to destroy instance
 
-- Specify the ssh key you want to use in your main.tf file
+### Variables
+
+- We can also set up variables in a separate file and call them in main.tf
+```bash
+variable "aws_key_name" {
+  default = "eng89_filipe"
+}
+
+variable "aws_key_path" {
+  default = "~/.ssh/eng89_filipe.pem"
+}
+```
+- We can call them using `key_name = var.aws_key_name`
+
+# Network Configuration Task
+
+<p align=center>
+        <img src=terraform_network_diagram.png>
+</p>
+
+- Create a VPC, IP: 10.202.0.0/16
+- Create an Internet Gateway and attach it
+- Create a Route Table with route 0.0.0.0/0 for all traffic allowed
+
+## Public Server, APP
+
+- Create the public Subnet and associate the RT, IP: 10.202.1.0/24
+- Create a NACL for the Subnet with following rules:
+
+### NACL
+
+#### Inbound Rules
+
+| Inbound Type | Protocol | Port Range   | Source     |
+|--------------|----------|--------------|------------|
+| HTTP (80)    | TCP (6)  | 80           | 0.0.0.0/0  |
+| SSH (22)     | TCP (6)  | 22           | [My IP]/32 |
+| Custom TCP   | TCP (6)  | 1024 - 65535 | 0.0.0.0/0  |
+
+#### Outbound Rules
+
+| Outbound Type | Protocol | Port Range   | Destination   |
+|---------------|----------|--------------|---------------|
+| HTTP (80)     | TCP (6)  | 80           | 0.0.0.0/0     |
+| Custom TCP    | TCP (6)  | 27017        | 10.202.2.0/24 |
+| Custom TCP    | TCP (6)  | 1024 - 65535 | 0.0.0.0/0     |
+
+- Create a Security Group with the following rules:
+
+### SG
+
+#### Inbound Rules
+
+| Inbound Type | Protocol | Port Range | Source     |
+|--------------|----------|------------|------------|
+| HTTP (80)    | TCP (6)  | 80         | 0.0.0.0/0  |
+| SSH (22)     | TCP (6)  | 22         | [My IP]/32 |
+
+#### Outbound Rules
+
+| Outbound Type | Protocol | Port Range   | Destination   |
+|---------------|----------|--------------|---------------|
+| HTTP (80)     | TCP (6)  | 80           | 0.0.0.0/0     |
+
+## Private Server, DB
+
+- Create the DB Subnet, IP: 10.202.2.0/24 (NO NEED FOR RT)
+- Create a NACL for the Subnet with following rules:
+
+### NACL
+
+#### Inbound Rules
+
+| Inbound Type | Protocol | Port Range   | Source        |
+|--------------|----------|--------------|---------------|
+| Custom TCP   | TCP (6)  | 27017        | 10.202.1.0/24 |
+| Custom TCP   | TCP (6)  | 1024 - 65535 | 0.0.0.0/0     |
+| SSH (22)     | TCP (6)  | 22           | 10.202.3.0/24 |
+
+#### Outbound Rules
+
+| Outbound Type | Protocol | Port range   | Destination   |
+|---------------|----------|--------------|---------------|
+| HTTP (80)     | TCP (6)  | 80           | 0.0.0.0/0     |
+| Custom TCP    | TCP (6)  | 1024 - 65535 | 10.202.1.0/24 |
+| Custom TCP    | TCP (6)  | 1024 - 65535 | 10.202.3.0/24 |
+
+- Create a Security Group with the following rules:
+
+### SG
+
+#### Inbound Rules
+
+| Inbound Type | Protocol | Port range | Source             |
+|--------------|----------|------------|--------------------|
+| Custom TCP   | TCP (6)  | 27017      | Custom: APP_SG     |
+| SSH (22)     | TCP (6)  | 22         | Custom: BASTION_SG |
+
+#### Outbound Rules
+
+| Inbound Type | Protocol | Source        |
+|--------------|----------|---------------|
+| All Traffic  | TCP (6)  | Anywhere-IPv4 |
+
+## Security Private Server, BASTION
+
+- Create the Bastion Subnet and associate the RT, IP: 10.202.3.0/24
+- Create a NACL for the Subnet with following rules:
+
+### NACL
+
+#### Inbound Rules
+
+| Inbound Type | Protocol | Port range   | Source        |
+|--------------|----------|--------------|---------------|
+| SSH (22)     | TCP (6)  | 22           | My IP/32      |
+| Custom TCP   | TCP (6)  | 1024 - 65535 | 10.202.2.0/24 |
+
+#### Outbound Rules
+
+| Outbound Type | Protocol | Port range   | Destination   |
+|---------------|----------|--------------|---------------|
+| SSH (22)      | TCP (6)  | 22           | 10.202.2.0/24 |
+| Custom TCP    | TCP (6)  | 1024 - 65535 | 0.0.0.0/0     |
+
+### SG
+
+#### Inbound Rules
+
+| Inbound Type | Protocol | Port Range | Source     |
+|--------------|----------|------------|------------|
+| SSH (22)     | TCP (6)  | 22         | [My IP]/32 |
+
+#### Outbound Rules
+
+| Inbound Type | Protocol | Source        |
+|--------------|----------|---------------|
+| All Traffic  | TCP (6)  | Anywhere-IPv4 |

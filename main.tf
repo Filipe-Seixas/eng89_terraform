@@ -17,7 +17,7 @@ provider "aws" {
 
 resource "aws_instance" "app_instance" {
 	
-	key_name = "eng89_filipe"
+	key_name = var.aws_key_name
 	ami = "ami-038d7b856fe7557b3"
 	instance_type = "t2.micro"
 	associate_public_ip_address = true
