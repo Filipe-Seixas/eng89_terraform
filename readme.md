@@ -58,8 +58,10 @@ resource "aws_instance" "app_instance" {
 
 # Once we are happy and the outcome is green we could run terraform apply
 ```
+
+- Common Commands:
         - `terraform init` to initialise terraform
-        - `terraform plan` to check and preview the changes that will happen to thhe infrastructure
+        - `terraform plan` to check and preview the changes that will happen to the infrastructure
         - `terraform apply` to commit the changes
         - `terraform destroy` to destroy instance
 
