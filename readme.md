@@ -13,15 +13,15 @@
 
 ### IAC Configuration Management vs Orchestration
 
-- **Configuration Management**:
+- ***Configuration Management***:
         - Generally, Ansible, Puppet, Chef are considered to be configuration management (CM) tools and were created to install and manage software on existing server instances (e.g., installation of packages, starting of services, installing scripts or config files on the instance).
 
-- **Configuration Orchestration**:
+- ***Configuration Orchestration***:
         - Tools like Terraform are considered to be orchestrators. They are designed to provision the server instances themselves, leaving the job of configuring those servers to other tools. Orchestration addresses the requirement to provision environments at a higher level than configuration management. The focus here is on coordinating configuration across complex environments and clusters.
 
 ## Terraform Set Up
 
-- Add env variables to Windows (AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY) and **make sure to close and open your terminal**
+- Add env variables to Windows (AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY) and ***make sure to close and open your terminal***
 - Create main.tf file `nano main.tf`
 - Specify the ssh key you want to use in your main.tf file
 

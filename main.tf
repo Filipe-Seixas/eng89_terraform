@@ -18,8 +18,8 @@ provider "aws" {
 resource "aws_instance" "app_instance" {
 	
 	key_name = var.aws_key_name
-	ami = "ami-038d7b856fe7557b3"
-	instance_type = "t2.micro"
+	ami = var.ami_id
+	instance_type = var.ec2_instance_type
 	associate_public_ip_address = true
 	tags = {
 		Name = "eng89_filipe_terraform"
