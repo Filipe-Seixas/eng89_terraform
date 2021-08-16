@@ -1,11 +1,34 @@
 # Terraform
 
-Add env variables to Windows (AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY)
+<p align=center>
+        <img src=terraform_diagram.PNG>
+</p>
 
-nano main.tf
+### What is Terraform and Benefits
+
+- Terraform is a tool for developing, changing and versioning infrastructure safely and efficiently.
+- It's used for the orchestration part of IAC
+- Terraform promotes IAC but also focuses on the automation of the infrastructure itself.
+        - Competitors: Ansible, Kubernetes, Packer
+
+### IAC Configuration Management vs Orchestration
+
+- Configuration Management:
+        - Generally, Ansible, Puppet, Chef are considered to be configuration management (CM) tools and were created to install and manage software on existing server instances (e.g., installation of packages, starting of services, installing scripts or config files on the instance).
+
+- Configuration Orchestration:
+        - Tools like Terraform are considered to be orchestrators. They are designed to provision the server instances themselves, leaving the job of configuring those servers to other tools. Orchestration addresses the requirement to provision environments at a higher level than configuration management. The focus here is on coordinating configuration across complex environments and clusters.
+
+## Terraform Set Up
+
+- Add env variables to Windows (AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY) and make sure to close and open your terminal
+- Create main.tf file `nano main.tf`
+
+#### main.tf
 ```bash
-# Let's build a script to connect to AWS and download/setup all required de>
+# Let's build a script to connect to AWS and download/setup all required dependencies
 # keyword: provider - Let's us connect to the cloud provider we want (AWS)
+
 provider "aws" {
 
         region = "eu-west-1"
@@ -14,4 +37,30 @@ provider "aws" {
 # Then we will run terraform init to initialise it
 # Then move on to launch AWS services
 
+# Let's launch an ec2 instance in eu-west-1 with:
+# keyword called "resource" provide resource name and give name with specific details to the service
+# resource aws_ec2_instance, name it as eng89_filipe_terraform, ami, type of instance, with or without ip
+# tags is the keyword to name the instance
+
+resource "aws_instance" "app_instance" {
+        
+        key_name = "eng89_filipe"
+        ami = "ami-038d7b856fe7557b3"
+        instance_type = "t2.micro"
+        associate_public_ip_address = true
+        tags = {
+                Name = "eng89_filipe_terraform"
+        }
+}
+
+# Most commonly used commands for terraform:
+# terraform plan, checks the syntax and validates the instruction we have provided in this script
+
+# Once we are happy and the outcome is green we could run terraform apply
 ```
+        - `terraform init` to initialise terraform
+        - `terraform plan` to check and preview the changes that will happen to thhe infrastructure
+        - `terraform apply` to commit the changes
+        - `terraform destroy` to destroy instance
+
+- Specify the ssh key you want to use in your main.tf file
