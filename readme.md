@@ -203,3 +203,15 @@ variable "aws_key_path" {
 | Inbound Type | Protocol | Source        |
 |--------------|----------|---------------|
 | All Traffic  | TCP (6)  | Anywhere-IPv4 |
+
+
+
+## Things to automate:
+- APP
+        - Default file to have reverse proxy
+        - Change env variable to match db private ips
+        - restart and enable nginx
+        - cd app and node app.js (seed if needed)
+
+- BASTION
+        - Copy ssh key into it so we can ssh to DB

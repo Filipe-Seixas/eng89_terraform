@@ -16,6 +16,32 @@ resource "aws_instance" "app_instance" {
 	vpc_security_group_ids = [aws_security_group.app_sg.id]
 	# Give public IP
 	associate_public_ip_address = true
+
+	provisioner "file" {
+		source      = "provision_app.sh"
+		destination = "/home/ubuntu/provision_app.sh"
+
+    	connection {
+      		type        = "ssh"
+      		user        = "ubuntu"
+      		private_key = file(var.aws_key_path)
+      		host        = self.public_ip
+    	}
+  	}
+  # runs commands in instance
+  provisioner "remote-exec" {
+  	inline = [
+  		"cd app",
+  		"sh provision_app.sh",
+  		"node app.js"
+  		]
+  	connection {
+      type        = "ssh"
+      user        = "ubuntu"
+      private_key = file(var.aws_key_path)
+      host        = self.public_ip
+    }
+  }
 	tags = {
 		Name = var.app_name
 	}
@@ -48,6 +74,19 @@ resource "aws_instance" "bastion_instance" {
 	vpc_security_group_ids = [aws_security_group.bastion_sg.id]
 	# Give public IP
 	associate_public_ip_address = true
+
+	# provisioner "file" {
+ #    source      = "C:/Users/pabfi/.ssh/eng89_filipe.pem"
+ #    destination = "/home/ubuntu/.ssh"
+
+ #    connection {
+ #      type        = "ssh"
+ #      user        = "ubuntu"
+ #      private_key = file(var.aws_key_path)
+ #      host        = self.public_ip
+ #    }
+ #  }
+
 	tags = {
 		Name = var.bastion_name
 	}
