@@ -12,11 +12,43 @@ resource "aws_instance" "app_instance" {
 	key_name = var.aws_key_name
 	ami = var.app_ami_id
 	instance_type = var.ec2_instance_type
-	subnet_id = aws_subnet.prod-subnet-public-1.id
-	vpc_security_group_ids = [aws_security_group.ssh-allowed.id]
+	subnet_id = aws_subnet.prod-subnet-app.id
+	vpc_security_group_ids = [aws_security_group.app_sg.id]
 	# Give public IP
 	associate_public_ip_address = true
 	tags = {
-		Name = var.name
+		Name = var.app_name
+	}
+}
+
+# Launch EC2 Instance - DB
+resource "aws_instance" "db_instance" {
+	
+	# SSH key name
+	key_name = var.aws_key_name
+	ami = var.db_ami_id
+	instance_type = var.ec2_instance_type
+	subnet_id = aws_subnet.prod-subnet-db.id
+	vpc_security_group_ids = [aws_security_group.db_sg.id]
+	# Give public IP
+	associate_public_ip_address = false
+	tags = {
+		Name = var.db_name
+	}
+}
+
+# Launch EC2 Instance - BASTION
+resource "aws_instance" "bastion_instance" {
+	
+	# SSH key name
+	key_name = var.aws_key_name
+	ami = var.bastion_ami_id
+	instance_type = var.ec2_instance_type
+	subnet_id = aws_subnet.prod-subnet-bastion.id
+	vpc_security_group_ids = [aws_security_group.bastion_sg.id]
+	# Give public IP
+	associate_public_ip_address = true
+	tags = {
+		Name = var.bastion_name
 	}
 }
