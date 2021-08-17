@@ -1,33 +1,98 @@
 # Let's build a script to connect to AWS and download/setup all required dependencies
 
-# keyword: provider - Let's us connect to the cloud provider we want (AWS)
-
+#provider - Let's us connect to the cloud provider we want (AWS)
 provider "aws" {
-
 	region = "eu-west-1"
 }
 
-# Then we will run terraform init to initialise it
-# Then move on to launch AWS services
-
-# Let's launch an ec2 instance in eu-west-1 with:
-# keyword called "resource" provide resource name and give name with specific details to the service
-# resource aws_ec2_instance, name it as eng89_filipe_terraform, ami, type of instance, with or without ip
-# tags is the keyword to name the instance
-
-resource "aws_instance" "app_instance" {
-	
-	key_name = var.aws_key_name
-	ami = var.ami_id
-	instance_type = var.ec2_instance_type
-	associate_public_ip_address = true
-	tags = {
-		Name = "eng89_filipe_terraform"
-	}
+# Create a VPC  
+resource "aws_vpc" "prod-vpc" {
+  cidr_block       = var.cidr_block 
+  instance_tenancy = "default"
+  tags = {
+    Name = var.vpc_name
+  }
 }
 
+# Create a Subnet
+resource "aws_subnet" "prod-subnet-public-1" {
+    vpc_id = aws_vpc.prod-vpc.id
+    cidr_block = "10.202.1.0/24"
+    map_public_ip_on_launch = "true" //it makes this a public subnet
+    availability_zone = "eu-west-1a"
+    tags = {
+        Name = var.subnet_app_name
+    }
+}
 
-# Most commonly used commands for terraform:
-# terraform plan, checks the syntax and validates the instruction we have provided in this script
+# Create Internet Gateway
+resource "aws_internet_gateway" "prod-igw" {
+  vpc_id = aws_vpc.prod-vpc.id
+  
+  tags = {
+    Name = var.igw_name
+  }
+}
 
-# Once we are happy and the outcome is green we could run terraform apply
+# Create Route Table
+resource "aws_route_table" "prod-public-crt" {
+    vpc_id = aws_vpc.prod-vpc.id
+    
+    route {
+        //associated subnet can reach everywhere
+        cidr_block = "0.0.0.0/0" 
+        //CRT uses this IGW to reach internet
+        gateway_id = aws_internet_gateway.prod-igw.id
+    }
+    tags = {
+        Name = var.rt_name
+    }
+}
+
+# Associate it with subnet
+resource "aws_route_table_association" "prod-crta-public-subnet-1"{
+    subnet_id = aws_subnet.prod-subnet-public-1.id
+    route_table_id = aws_route_table.prod-public-crt.id
+}
+
+# Create Security Group
+resource "aws_security_group" "ssh-allowed" {
+    vpc_id = aws_vpc.prod-vpc.id
+    
+    egress {
+        from_port = 0
+        to_port = 0
+        protocol = -1
+        cidr_blocks = ["0.0.0.0/0"]
+    }
+    ingress {
+        from_port = 22
+        to_port = 22
+        protocol = "tcp"
+        cidr_blocks = [var.my_ip]
+    }
+    //If you do not add this rule, you can not reach the NGINX  
+    ingress {
+        from_port = 80
+        to_port = 80
+        protocol = "tcp"
+        cidr_blocks = ["0.0.0.0/0"]
+    }
+    tags = {
+        Name = var.sg_app_name
+    }
+}
+
+# Launch EC2 Instance - APP
+resource "aws_instance" "app_instance" {
+	
+	# SSH key name
+	key_name = var.aws_key_name
+	ami = var.app_ami_id
+	instance_type = var.ec2_instance_type
+	# Give public IP
+	associate_public_ip_address = true
+	tags = {
+		Name = var.name
+	}
+}
