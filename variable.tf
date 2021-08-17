@@ -1,6 +1,6 @@
 # Let's create variables for our resources in main.tf to implement DRY
 
-# --- SSH Keys --- #
+# --- General --- #
 variable "aws_key_name" {
   default = "eng89_filipe"
 }
@@ -11,6 +11,14 @@ variable "aws_key_path" {
 
 variable "my_ip" {
   default = "188.211.163.29/32"
+}
+
+variable "region" {
+  default = "eu-west-1"
+}
+
+variable "avail_zone" {
+  default = "eu-west-1a"
 }
 
 # --- EC2 Instance --- #
@@ -47,6 +55,11 @@ variable "rt_name" {
 # --- SG (APP) --- #
 variable "sg_app_name" {
   default = "eng89_filipe_terraform_sg_app"
+}
+
+# --- NACL (APP) --- #
+variable "nacl_app_name" {
+  default = "eng89_filipe_terraform_nacl_app"
 }
 
 # --- Subnet (APP) --- #
