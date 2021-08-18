@@ -31,9 +31,8 @@ resource "aws_instance" "app_instance" {
   # runs commands in instance
   provisioner "remote-exec" {
   	inline = [
-  		"cd app",
+  		"chmod +x provision_app.sh",
   		"sh provision_app.sh",
-  		"node app.js"
   		]
   	connection {
       type        = "ssh"

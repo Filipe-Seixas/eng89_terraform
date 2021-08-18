@@ -206,7 +206,10 @@ variable "aws_key_path" {
 
 
 
-## Things to automate:
+## Provisioning:
+
+#### Steps to Automate (check provision_app.sh file)
+
 - APP
         - Default file to have reverse proxy
         - Change env variable to match db private ips
